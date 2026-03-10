@@ -1,7 +1,7 @@
 {
   "experiences": [
     {
-      "namefile": "experience_01",
+      "namefile": "experience_MV_01",
       "datafile": "Cleaned_data_Open_loop_experiment_on_MV_2026-03-03-09h32.txt",
       "FOPDT_OPT": {
         "Kp": 0.5354815066755887,
@@ -21,6 +21,29 @@
         "Tg": 156.67,
         "t1": 86.67,
         "t2": 116.67
+      }
+    },
+    {
+      "namefile": "experience_MV_02",
+      "datafile": "Cleaned_data_Open_loop_experiment_on_MV_2026-03-08-11h40.txt",
+      "FOPDT_OPT": {
+        "Kp": 0.540610574655048,
+        "T": 148.28838965103748,
+        "Theta": 39.49500901683828
+      },
+      "SOPDT_OPT": {
+        "Kp": 0.5348907656078244,
+        "T1": 130.5026136090156,
+        "T2": 35.46518028608689,
+        "Theta": 14.348568183245677
+      },
+      "Graph": {
+        "Kp": 0.52,
+        "a": 0.15,
+        "Tu": 34.71,
+        "Tg": 164.21,
+        "t1": 82.1,
+        "t2": 113.68
       }
     }
   ]
