@@ -144,8 +144,47 @@ def IMC_TUNING(Kp,Tc,T1,T2=0, alpha=0):
     return Kc, Ti, Td
 
 #----------------------------------------------
-def MARGIN():
-    pass
+def MARGIN(Ps, omega):
+    """
+    The function "MARGIN" computes the gain margin and the phase margin of a system.
+    """
+    # Compute the gain margin
+    Index_G = np.argmin(np.abs(np.angle(Ps)+np.pi))
+    Frequency_G = omega[Index_G]
+    print(f"Frequency at which the phase is -180 degrees: {Frequency_G} rad/s")
+    GM = 1/np.abs(Ps[Index_G])
+
+    # Compute the phase margin
+    Index_P = np.argmin(np.abs(np.abs(Ps)-1))
+    Frequency_P = omega[Index_P]
+    print(f"Frequency at which the gain is 1: {Frequency_P} rad/s")
+    PM = 180 + np.angle(Ps[Index_P])*180/np.pi
+
+    plt.figure(figsize = (18,12))
+
+    plt.subplot(2,1,1)
+    plt.semilogx(omega,20*np.log10(np.abs(Ps)),'cyan')
+    Gain_dB = 20*np.log10(np.abs(Ps[Index_G]))
+    plt.axvline(Frequency_G, color='red', linestyle='--')
+    plt.axhline(0, color='black', linestyle=':')        
+    plt.plot(Frequency_G, Gain_dB, 'ro')                    
+    plt.xlim([np.min(omega), np.max(omega)])
+    plt.ylabel('Amplitude [db]')
+    plt.title('Bode plot and margins')
+
+    plt.subplot(2,1,2)
+    ph_min = np.min((180/np.pi)*np.unwrap(np.angle(Ps))) - 10
+    ph_max = np.max((180/np.pi)*np.unwrap(np.angle(Ps))) + 10
+    plt.semilogx(omega, (180/np.pi)*np.unwrap(np.angle(Ps)),'cyan')
+    Phase_deg = (180/np.pi)*np.unwrap(np.angle(Ps))
+    plt.axvline(Frequency_P, color='red', linestyle='--')   
+    plt.axhline(-180, color='black', linestyle=':')         
+    plt.plot(Frequency_P, Phase_deg[Index_P], 'ro')
+    plt.xlim([np.min(omega), np.max(omega)])
+    plt.ylim([np.max([ph_min, -200]), ph_max])
+    plt.ylabel('Phase [°]')
+
+    return GM, PM
 
 
 
