@@ -45,6 +45,16 @@
         "t1": 82.1,
         "t2": 113.68
       }
+    },
+    {
+      "namefile": "experience_MV_03",
+      "datafile": "Cleaned_data_Open_loop_experiment_on_DV_2026-03-09-19h36.txt",
+      "SOPDT_OPT": {
+        "Kp": 0.6185996051568341,
+        "T1": 147.5486385332903,
+        "T2": 36.22565494631446,
+        "Theta": 13.351904889062693
+      }
     }
   ]
 }
