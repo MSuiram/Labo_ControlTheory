@@ -67,45 +67,44 @@ def PID_RT(SP, PV, Man, MVMan, MVFF, Kc, Ti, Td, alpha, Ts, MVMin, MVMax, MV, MV
         E.append(SP[-1] - PVInit)
     else:
         E.append(SP[-1] - PV[-1])
-    
 
-    # Compute the proportional term
-    MVP.append(Kc*E[-1])
+    # Proportional term
+    MVP.append(Kc * E[-1])
 
-    # Compute the integral term
+    # Integral term
     if len(MVI) == 0:
-        MVI.append((Kc*Ts/Ti)*E[-1])
+        MVI.append((Kc * Ts / Ti) * E[-1])
     else:
         if methodeI == 'EBD':
-            MVI.append(MVI[-1] + (Kc*Ts/Ti)*E[-1])
+            MVI.append(MVI[-1] + (Kc * Ts / Ti) * E[-1])
         if methodeI == 'TRAP':
-            MVI.append(MVI[-1] + ((Kc*Ts)/(2*Ti))*(E[-1] + E[-2]))
+            MVI.append(MVI[-1] + ((Kc * Ts) / (2 * Ti)) * (E[-1] + E[-2]))
 
-    # Compute the derivative term
+    # Derivative term
     if len(MVD) == 0:
         MVD.append(0)
     else:
-        Tfd = alpha*Td
+        Tfd = alpha * Td
         if methodeD == 'EBD':
-            MVD.append((Tfd/(Tfd+Ts))*MVD[-1] + ((Kc*Td)/(Tfd+Ts))*(E[-1] - E[-2]))
+            MVD.append((Tfd / (Tfd + Ts)) * MVD[-1] + ((Kc * Td) / (Tfd + Ts)) * (E[-1] - E[-2]))
         if methodeD == 'TRAP':
-            MVD.append((Tfd-Ts/2)/(Tfd+Ts/2)*MVD[-1] + ((Kc*Td)/(Tfd+Ts/2))*(E[-1] - E[-2]))
+            MVD.append((Tfd - Ts/2) / (Tfd + Ts/2) * MVD[-1] + ((Kc * Td) / (Tfd + Ts/2)) * (E[-1] - E[-2]))
 
-    # Manual mode is true
+    # Manual mode
     if Man[-1] == True:
         if ManFF == True:
-            MVI[-1] = MVMan[-1] - MVP[-1] - MVD[-1]
-        else: 
             MVI[-1] = MVMan[-1] - MVP[-1] - MVD[-1] - MVFF[-1]
-    
-    # Saturation
-    if MVI[-1]+MVP[-1]+MVD[-1] >= MVMax:
-        MVI[-1] = MVMax - MVP[-1] - MVD[-1]
-    elif MVI[-1]+MVP[-1]+MVD[-1] <= MVMin:
-        MVI[-1] = MVMin - MVP[-1] - MVD[-1]
+        else:
+            MVI[-1] = MVMan[-1] - MVP[-1] - MVD[-1]
 
-    # Compute the MV
-    MV.append(MVP[-1] + MVI[-1] + MVD[-1])
+    # Saturation — PID terms clamped to [MVMin-MVFF, MVMax-MVFF]
+    if MVI[-1] + MVP[-1] + MVD[-1] + MVFF[-1]>= MVMax :
+        MVI[-1] = MVMax - MVFF[-1] - MVP[-1] - MVD[-1]
+    elif MVI[-1] + MVP[-1] + MVD[-1] + MVFF[-1]<= MVMin :
+        MVI[-1] = MVMin - MVFF[-1] - MVP[-1] - MVD[-1]
+
+    # MV output includes MVFF
+    MV.append(MVP[-1] + MVI[-1] + MVD[-1] + MVFF[-1])
 
 #----------------------------------------------
 def IMC_TUNING(Kp,gamma,T1,T2=0, theta=0):
@@ -143,6 +142,7 @@ def IMC_TUNING(Kp,gamma,T1,T2=0, theta=0):
         Ti = T1 + T2
         Td = (T1*T2)/(T1 + T2)       
     return Kc, Ti, Td
+
 
 #----------------------------------------------
 def MARGIN(Ps, omega):
