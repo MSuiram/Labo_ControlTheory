@@ -108,13 +108,13 @@ def PID_RT(SP, PV, Man, MVMan, MVFF, Kc, Ti, Td, alpha, Ts, MVMin, MVMax, MV, MV
     MV.append(MVP[-1] + MVI[-1] + MVD[-1])
 
 #----------------------------------------------
-def IMC_TUNING(Kp,Tc,T1,T2=0, alpha=0):
+def IMC_TUNING(Kp,gamma,T1,T2=0, theta=0):
     
     """
     The function "IMC_TUNING" computes the PID parameters based on the IMC tuning rules.
 
     :Kp: process gain
-    :Tc: controller time constant
+    :gamma: constant aggressiveness
     :T1: first time constant
     :T2: second time constant (default is 0)
     :alpha: derivative filter coefficient (default is 0)
@@ -124,21 +124,22 @@ def IMC_TUNING(Kp,Tc,T1,T2=0, alpha=0):
 
     :return: Kc, Ti, Td (PID parameters)
     """
+    Tc = T1* gamma
 
-    if T2 == 0 and alpha == 0: #First order
+    if T2 == 0 and theta == 0: #First order
         Kc = T1/(Kp*Tc)
         Ti = T1
         Td = 0
-    elif T2 == 0 and alpha != 0: #First order with delay
-        Kc = T1 /((Tc + alpha)*Kp)
+    elif T2 == 0 and theta != 0: #First order with delay
+        Kc = T1 /((Tc + theta)*Kp)
         Ti = T1
         Td = 0
-    elif T2 != 0 and alpha == 0: #Second order
+    elif T2 != 0 and theta == 0: #Second order
         Kc = (T1+T2)/(Kp*Tc)
         Ti = T1 + T2
         Td = (T1*T2)/(T1 + T2)
     else: #Second order with delay
-        Kc = (T1+T2)/((Tc + alpha)*Kp)
+        Kc = (T1+T2)/((Tc + theta)*Kp)
         Ti = T1 + T2
         Td = (T1*T2)/(T1 + T2)       
     return Kc, Ti, Td
@@ -147,6 +148,8 @@ def IMC_TUNING(Kp,Tc,T1,T2=0, alpha=0):
 def MARGIN(Ps, omega):
     """
     The function "MARGIN" computes the gain margin and the phase margin of a system.
+    :Ps: vector of the process sensitivity function evaluated at the frequencies in "omega"
+    :omega: vector of frequencies at which the process sensitivity function is evaluated
     """
     # Compute the gain margin
     Index_G = np.argmin(np.abs(np.angle(Ps)+np.pi))

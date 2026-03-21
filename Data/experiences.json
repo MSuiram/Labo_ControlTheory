@@ -47,10 +47,15 @@
       }
     },
     {
-      "namefile": "experience_MV_03",
+      "namefile": "experience_DV_01",
       "datafile": "Cleaned_data_Open_loop_experiment_on_DV_2026-03-09-19h36.txt",
+      "FOPDT_OPT": {
+        "Kd": 0.6246941869387478,
+        "T": 163.7434503437258,
+        "Theta": 40.6243773537469
+      },
       "SOPDT_OPT": {
-        "Kp": 0.6185996051568341,
+        "Kd": 0.6185996051568341,
         "T1": 147.5486385332903,
         "T2": 36.22565494631446,
         "Theta": 13.351904889062693
