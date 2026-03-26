@@ -145,50 +145,62 @@ def IMC_TUNING(Kp,gamma,T1,T2=0, theta=0):
 
 
 #----------------------------------------------
-def MARGIN(Ps, omega):
+def MARGIN(Ps, Cs, omega):
     """
-    The function "MARGIN" computes the gain margin and the phase margin of a system.
-    :Ps: vector of the process sensitivity function evaluated at the frequencies in "omega"
-    :omega: vector of frequencies at which the process sensitivity function is evaluated
+    Computes and plots the gain margin, phase margin, and -3dB bandwidth of a system.
+    :Ps: vector of the process transfer function evaluated at frequencies in omega
+    :Cs: vector of the controller transfer function evaluated at frequencies in omega
+    :omega: vector of frequencies [rad/s]
     """
-    # Compute the gain margin
-    Index_G = np.argmin(np.abs(np.angle(Ps)+np.pi))
+    Ls = Cs * Ps
+    gain_dB = 20 * np.log10(np.abs(Ls))
+    phase_unwrapped = np.unwrap(np.angle(Ls)) * 180 / np.pi
+
+    # Gain margin: phase = -180°
+    Index_G = np.argmin(np.abs(phase_unwrapped + 180))
     Frequency_G = omega[Index_G]
-    print(f"Frequency at which the phase is -180 degrees: {Frequency_G} rad/s")
-    GM = 1/np.abs(Ps[Index_G])
+    GM = 20 * np.log10(1 / np.abs(Ls[Index_G]))  # dB
 
-    # Compute the phase margin
-    Index_P = np.argmin(np.abs(np.abs(Ps)-1))
+    # Phase margin: gain = 0 dB
+    Index_P = np.argmin(np.abs(np.abs(Ls) - 1))
     Frequency_P = omega[Index_P]
-    print(f"Frequency at which the gain is 1: {Frequency_P} rad/s")
-    PM = 180 + np.angle(Ps[Index_P])*180/np.pi
+    PM = 180 + phase_unwrapped[Index_P]
 
-    plt.figure(figsize = (18,12))
+    # Bandwidth: gain = -3 dB
+    Index_BW = np.argmin(np.abs(gain_dB + 3))
+    Frequency_BW = omega[Index_BW]
 
-    plt.subplot(2,1,1)
-    plt.semilogx(omega,20*np.log10(np.abs(Ps)),'cyan')
-    Gain_dB = 20*np.log10(np.abs(Ps[Index_G]))
-    plt.axvline(Frequency_G, color='red', linestyle='--')
-    plt.axhline(0, color='black', linestyle=':')        
-    plt.plot(Frequency_G, Gain_dB, 'ro')                    
-    plt.xlim([np.min(omega), np.max(omega)])
-    plt.ylabel('Amplitude [db]')
-    plt.title('Bode plot and margins')
+    print(f"Phase crossover frequency : {Frequency_G:.4f} rad/s")
+    print(f"Bandwidth (-3dB)          : {Frequency_BW:.4f} rad/s")
+    print(f"Gain Margin               : {GM:.2f} dB")
+    print(f"Phase Margin              : {PM:.2f} °")
 
-    plt.subplot(2,1,2)
-    ph_min = np.min((180/np.pi)*np.unwrap(np.angle(Ps))) - 10
-    ph_max = np.max((180/np.pi)*np.unwrap(np.angle(Ps))) + 10
-    plt.semilogx(omega, (180/np.pi)*np.unwrap(np.angle(Ps)),'cyan')
-    Phase_deg = (180/np.pi)*np.unwrap(np.angle(Ps))
-    plt.axvline(Frequency_P, color='red', linestyle='--')   
-    plt.axhline(-180, color='black', linestyle=':')         
-    plt.plot(Frequency_P, Phase_deg[Index_P], 'ro')
-    plt.xlim([np.min(omega), np.max(omega)])
-    plt.ylim([np.max([ph_min, -200]), ph_max])
-    plt.ylabel('Phase [°]')
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(18, 12))
 
-    return GM, PM
+    # --- Gain plot ---
+    ax1.semilogx(omega, gain_dB, 'cyan')
+    ax1.axhline(-3, color='black', linestyle=':')
+    ax1.axvline(Frequency_BW, color='red', linestyle='--', label=f'ωBW = {Frequency_BW:.3f} rad/s')
+    ax1.plot(Frequency_BW, -3, 'ro')
+    ax1.set_xlim([np.min(omega), np.max(omega)])
+    ax1.set_ylabel('Amplitude [dB]')
+    ax1.set_title('Bode plot and margins')
+    ax1.legend()
 
+    # --- Phase plot ---
+    ph_min = np.min(phase_unwrapped) - 10
+    ph_max = np.max(phase_unwrapped) + 10
+    ax2.semilogx(omega, phase_unwrapped, 'cyan')
+    ax2.axhline(-180, color='black', linestyle=':')
+    ax2.axvline(Frequency_G, color='red', linestyle='--', label=f'ω180 = {Frequency_G:.3f} rad/s')
+    ax2.plot(Frequency_G, phase_unwrapped[Index_G], 'ro')
+    ax2.set_xlim([np.min(omega), np.max(omega)])
+    ax2.set_ylim([np.max([ph_min, -400]), ph_max])
+    ax2.set_ylabel('Phase [°]')
+    ax2.set_xlabel('Fréquence [rad/s]')
+    ax2.legend()
 
+    plt.tight_layout()
+    plt.show()
 
-
+    return GM, PM, Frequency_BW
