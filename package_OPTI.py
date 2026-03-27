@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
@@ -47,7 +48,7 @@ def Signal_Response(alpha, gamma):
     elif Scenario == 4:  # 4 - FF and NO Man
         FF = True
         SPPath = {0: 77, TSim: 77}
-        DVPath = {0: 50, 500: 60, TSim: 60}
+        DVPath = {0: 50, TSim: 50}
         ManPath = {0: True, 225: False, TSim: False}
         MVManPath = {0: 50, 225: 0, TSim: 0}
 
@@ -281,3 +282,85 @@ def Optimise(step=0.1):
     
     print(f"*** MEILLEUR: alpha={best_alpha:.3f}, gamma={best_gamma:.3f}, time={best_time:.0f}s ***")
     return best_alpha, best_gamma
+
+
+
+def Optimise2(alpha, gamma, nr):
+    value = []
+    alphas = np.linspace(alpha[0], alpha[1], nr)
+    gammas = np.linspace(gamma[0], gamma[1], nr)
+    
+    for i in alphas:
+        for j in gammas:
+            results, P = Signal_Response(i, j)
+            idx = find_settling_index(results["PV"], results["SP"], window=10, tol_percent=0.1, check_until_end=True)
+            if idx is not None:
+                value.append((i, j, results['t'][idx]))
+                print(f"valeur trouvée pour alpha={i}, gamma={j}, time={idx}")
+            else : 
+                print(f"Pas de settling stable pour alpha={i}, gamma={j}")
+
+    if not value:
+        raise ValueError("Aucun point stable trouvé dans cette zone !")
+
+    best = min(value, key=lambda x: x[2])  # min settling time
+    
+    step_a = (alpha[1] - alpha[0]) / 4
+    step_g = (gamma[1] - gamma[0]) / 4
+    
+    new_alpha = (best[0] - step_a, best[0] + step_a)
+    new_gamma = (best[1] - step_g, best[1] + step_g)
+    
+    return new_alpha, new_gamma, value, best
+
+
+def Optimise_recursif(alpha, gamma, depth, nr, all_results=None, best=None):
+    if all_results is None:
+        all_results = []
+    
+    if depth == 0:
+        return alpha, gamma, all_results, best
+    else:
+        alpha, gamma, value, current_best = Optimise2(alpha, gamma, nr)
+        all_results.extend(value)
+        best = current_best  
+        return Optimise_recursif(alpha, gamma, depth-1, nr, all_results, best)
+    
+
+
+def Plot_Heatmap(all_results, depth):
+    pass_size = len(all_results) // depth
+    passes = [all_results[i*pass_size:(i+1)*pass_size] for i in range(depth)]
+    
+    fig, axes = plt.subplots(1, depth, figsize=(6*depth, 5))
+    if depth == 1:
+        axes = [axes]
+    
+    for i, pass_data in enumerate(passes):
+        df = pd.DataFrame(pass_data, columns=['alpha', 'gamma', 'time'])
+        
+        # ← Convertir en catégories ordonnées plutôt qu'arrondir
+        df['alpha'] = df['alpha'].round(3)
+        df['gamma'] = df['gamma'].round(3)
+        alpha_cats = sorted(df['alpha'].unique())
+        gamma_cats = sorted(df['gamma'].unique())
+        df['alpha'] = pd.Categorical(df['alpha'], categories=alpha_cats, ordered=True)
+        df['gamma'] = pd.Categorical(df['gamma'], categories=gamma_cats, ordered=True)
+        
+        pivot = df.pivot_table(index='alpha', columns='gamma', values='time', aggfunc='mean')
+        # ← reindex pour forcer la grille complète
+        pivot = pivot.reindex(index=alpha_cats, columns=gamma_cats)
+        
+        sns.heatmap(pivot, ax=axes[i], cmap='viridis_r',
+                    cbar_kws={'label': 'Settling Time (s)'},
+                    linewidths=0.5)
+        
+        axes[i].set_title(f'Passe {i+1}')
+        axes[i].set_xlabel('Gamma')
+        axes[i].set_ylabel('Alpha')
+        axes[i].invert_yaxis()
+        axes[i].xaxis.set_major_locator(plt.MaxNLocator(6))
+        axes[i].yaxis.set_major_locator(plt.MaxNLocator(6))
+    
+    plt.tight_layout()
+    plt.show()
