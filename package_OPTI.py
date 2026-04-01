@@ -10,47 +10,76 @@ from  package_DBR import *
 from Package_Lab import *
 
 
-def Signal_Response(alpha, gamma):
-    Scenario = 4
-    # 1 - NO FF and Man
-    # 2 - FF and Man
-    # 3 - NO FF and NO Man
-    # 4 - FF and NO Man
 
-    TSim = 1000
-    Ts = 1
-    N = int(TSim/Ts) + 1
+calibration = {
+  -50.0: {'alpha': 2.4162, 'gamma': 3.1981},
+  -48.0: {'alpha': 2.3815, 'gamma': 3.1721},
+  -46.0: {'alpha': 2.4162, 'gamma': 2.9208},
+  -44.0: {'alpha': 2.5550, 'gamma': 2.8862},
+  -42.0: {'alpha': 2.7401, 'gamma': 2.6783},
+  -40.0: {'alpha': 3.0178, 'gamma': 2.4703},
+  -38.0: {'alpha': 3.1566, 'gamma': 2.3664},
+  -36.0: {'alpha': 4.2054, 'gamma': 2.0892},
+  -34.0: {'alpha': 5.4240, 'gamma': 1.9159},
+  -32.0: {'alpha': 20.0000, 'gamma': 1.6387}, 
+  -30.0: {'alpha': 20.0000, 'gamma': 1.5347},  
+  -28.0: {'alpha': 20.0000, 'gamma': 1.4231},  
+  -26.0: {'alpha': 20.0000, 'gamma': 1.4231},  
+  -24.0: {'alpha': 20.0000, 'gamma': 1.4231}, 
+  -22.0: {'alpha': 20.0000, 'gamma': 1.3000},  
+  -20.0: {'alpha': 20.0000, 'gamma': 1.1699},  
+  -18.0: {'alpha': 20.0000, 'gamma': 1.0415},  
+  -16.0: {'alpha': 3.9507, 'gamma': 1.0084},   
+  -14.0: {'alpha': 20.0000, 'gamma': 0.7968},  
+  -12.0: {'alpha': 20.0000, 'gamma': 0.6713},
+  -10.0: {'alpha': 2.6195, 'gamma': 0.6613}, 
+  -8.0:  {'alpha': 1.6141, 'gamma': 0.6106},   
+  -6.0:  {'alpha': 1.2324, 'gamma': 0.5057},  
+  -4.0:  {'alpha': 0.6938, 'gamma': 0.4451}, 
+  -2.0:  {'alpha': 0.3618, 'gamma': 0.3151},  
+   0.0:  {'alpha': 1.6141, 'gamma': 0.2102},   
+   2.0:  {'alpha': 0.4659, 'gamma': 0.3065},  
+   4.0:  {'alpha': 0.8176, 'gamma': 0.4018},   
+   6.0:  {'alpha': 1.2324, 'gamma': 0.5057},  
+   8.0:  {'alpha': 1.6141, 'gamma': 0.6106},   
+  10.0:  {'alpha': 2.3656, 'gamma': 0.6749},   
+  12.0:  {'alpha': 19.6877, 'gamma': 0.6713},
+  14.0:  {'alpha': 8.2384, 'gamma': 0.8291},  
+  16.0:  {'alpha': 3.9471, 'gamma': 1.0140},  
+  18.0:  {'alpha': 9.4450, 'gamma': 1.0502},  
+  20.0:  {'alpha': 20.0000, 'gamma': 1.1543},  
+  22.0:  {'alpha': 16.5642, 'gamma': 1.2931},  
+  24.0:  {'alpha': 20.0000, 'gamma': 1.3191},  
+  26.0:  {'alpha': 20.0000, 'gamma': 1.3191},  
+  28.0:  {'alpha': 20.0000, 'gamma': 0.1720},  
+  30.0:  {'alpha': 20.0000, 'gamma': 0.1807},  
+  32.0:  {'alpha': 9.9940, 'gamma': 0.0944},   
+  34.0:  {'alpha': 6.4655, 'gamma': 0.0981},  
+  36.0:  {'alpha': 5.1635, 'gamma': 0.0254}, 
+  38.0:  {'alpha': 4.1479, 'gamma': 0.0266},  
+  40.0:  {'alpha': 3.8055, 'gamma': 0.0276},  
+  42.0:  {'alpha': 3.7187, 'gamma': 0.0276},  
+  44.0:  {'alpha': 3.7061, 'gamma': 0.0277},  
+  46.0:  {'alpha': 3.7061, 'gamma': 0.0277},  
+  48.0:  {'alpha': 3.7061, 'gamma': 0.0277},  
+  50.0:  {'alpha': 3.7061, 'gamma': 0.0277},   
+}
 
-    # Path
-    if Scenario == 1:  # 1 - NO FF and Man
-        FF = False
-        MVFFPath = {0: 0, TSim: 0}
-        SPPath = {0: 77, TSim: 77}
-        DVPath = {0: 50, 500: 60, TSim: 60}
-        ManPath = {0: True, TSim: True}
-        MVManPath = {0: 50, TSim: 50}
 
-    elif Scenario == 2:  # 2 - FF and Man
-        FF = True
-        SPPath = {0: 77, TSim: 77}
-        DVPath = {0: 50, 500: 60, TSim: 60}
-        ManPath = {0: True, TSim: True}
-        MVManPath = {0: 50, TSim: 50}
+def Signal_Response(alpha, gamma, sp, pv0):
+    TSim = 2500
+    Ts = 2
+    N = int(TSim / Ts) + 1
 
-    elif Scenario == 3:  # 3 - NO FF and NO Man
-        FF = False
-        MVFFPath = {0: 0, TSim: 0}
-        SPPath = {0: 77, TSim: 77}
-        DVPath = {0: 50, 500: 60, TSim: 60}
-        ManPath = {0: True, 225: False, TSim: False}
-        MVManPath = {0: 50, 225: 0, TSim: 0}
+    PV0 = pv0   # ← utilise le paramètre
 
-    elif Scenario == 4:  # 4 - FF and NO Man
-        FF = True
-        SPPath = {0: 77, TSim: 77}
-        DVPath = {0: 50, TSim: 50}
-        ManPath = {0: True, 225: False, TSim: False}
-        MVManPath = {0: 50, 225: 0, TSim: 0}
+    FF = True
+    
+    # Utilise sp et pv0 ici
+    SPPath = {0: PV0, 750: sp, TSim: sp}
+    DVPath = {0: 50, 1500: 60, TSim: 60}
+    ManPath = {0: True, 225: False, TSim: False}
+    MVManPath = {0: 50, 225: 0, TSim: 0}
 
     # Listes
     t = []
@@ -82,18 +111,18 @@ def Signal_Response(alpha, gamma):
     E = []
     Man = []
 
-    # Paramètres
+    # Paramètres initiaux dépendants de pv0
     DV0 = 50
     MV0 = 50
-    PV0 = 77
-    gamma = gamma
+
     Kc = 0
     Ti = 0
     Td = 0
-    alpha = alpha
+
     MVMin = 0
     MVMax = 100
     ManFF = False
+
     Kd = 0.618599605156834
     Kp = 0.540610574655048
     T1d = 147.5486385332903
@@ -102,7 +131,6 @@ def Signal_Response(alpha, gamma):
     T2p = 35.46518028608689
     Thetap = 14.348568183245677
     Thetad = 13.351904889062693
-    
 
     for i in range(0, N):
 
@@ -113,34 +141,31 @@ def Signal_Response(alpha, gamma):
         SelectPath_RT(MVManPath, t, MVMan)
 
         # MVFF
-        if FF is True:
+        if FF:
             Delay_RT(DV - DV0 * np.ones_like(DV), max(0, Thetad - Thetap), Ts, MVFFDelay)
             LL_RT(MVFFDelay, -Kd / Kp, Ts, T1p, T1d, MVFF_FLL)
             LL_RT(MVFF_FLL, 1, Ts, T2p, T2d, MVFF, 0)
-        else:
-            SelectPath_RT(MVFFPath, t, MVFF)
 
         Kc, Ti, Td = IMC_TUNING(Kp, gamma, T1p, T2p)
 
         PID_RT(
             SP, PV, Man, MVMan, MVFF,
             Kc, Ti, Td, alpha, Ts, MVMin, MVMax,
-            MV, MVP, MVI, MVD, E, ManFF, PV0
+            MV, MVP, MVI, MVD, E, ManFF, PV0   # ← PV0 cohérent
         )
 
-        # P(s)
+        # Process P(s)
         Delay_RT(MV, Thetap, Ts, MVDelayp, MV0)
         FO_RT(MVDelayp, Kp, T1p, Ts, PV1p, 0)
         FO_RT(PV1p, 1, T2p, Ts, PV2p, 0)
 
-        # D(s)
+        # Disturbance D(s)
         Delay_RT(DV - DV0 * np.ones_like(DV), Thetad, Ts, MVDelayd, DV0)
         FO_RT(MVDelayd, Kp, T1d, Ts, PV1d, 0)
         FO_RT(PV1d, 1, T2d, Ts, PV2d, 0)
 
         PV.append(PV2p[-1] + PV2d[-1] + PV0 - Kp * MV0)
 
-    # Construire le dictionnaire de toutes les listes
     results = {
         "t": t,
         "SP": SP,
@@ -166,92 +191,74 @@ def Signal_Response(alpha, gamma):
         "E": E,
         "Man": Man,
     }
+
     P = Process({'Kp': Kp, 'Tlag1': T1p, 'Tlag2': T2p, 'theta': Thetap})
-    return results,P
+
+    return results, P
 
 #-----------------------------------
 
-def find_settling_index(PV, SP, window=10, tol_percent=1.0, check_until_end=True):
-    """
-    Trouve le premier indice où PV reste dans la bande de tolérance
-    pendant `window` points consécutifs.
-
-    Si check_until_end=True (défaut) : vérifie aussi que PV ne quitte
-    PLUS JAMAIS la bande après ce point → élimine les faux settlings
-    des systèmes instables à phase stable transitoire.
-
-    Retourne l'indice, ou None si pas de settling stable.
-    """
-    n = len(PV)
-    if n == 0 or len(SP) != n or n < window:
-        return None
-
-    for i in range(0, n - window + 1):
-
-        # 1. Vérifier la fenêtre de `window` points consécutifs
-        window_ok = True
-        for k in range(window):
-            pv = PV[i + k]
-            sp = SP[i + k]
-            if sp == 0:
-                window_ok = False
-                break
-            tol = abs(sp) * tol_percent / 100.0
-            if not (sp - tol <= pv <= sp + tol):
-                window_ok = False
-                break
-
-        if not window_ok:
-            continue
-
-        # 2. Vérifier que PV reste dans la bande jusqu'à la fin
-        if check_until_end:
-            tail_ok = True
-            for j in range(i + window, n):
-                pv = PV[j]
-                sp = SP[j]
-                if sp == 0:
-                    tail_ok = False
-                    break
-                tol = abs(sp) * tol_percent / 100.0
-                if not (sp - tol <= pv <= sp + tol):
-                    tail_ok = False
-                    break
-
-            if not tail_ok:
-                continue  # faux settling, on continue la recherche
-
-        return i  # settling confirmé
-
-    return None  # instable ou jamais convergé
+def calc_efficacité(result):
+    sum = 0
+    for i in range(len(result["t"])):
+        sum += abs(result["SP"][i]-result["PV"][i])
+    return sum
 
 #-----------------------------------
 
-def plot_pv_sp_with_index(t, PV, SP, idx, title="PV vs SP"):
-    """
-    Si idx=None ou invalide → trace juste PV/SP sans trait vertical
-    """
-    # Sécurité robuste
-    n = min(len(t) if t else 0, len(PV) if PV else 0, len(SP) if SP else 0)
+def Optimise(alpha_range, gamma_range, nombre_points, sp,pv0):
+    result = []
     
+    alpha_values = np.linspace(alpha_range[0], alpha_range[1], nombre_points)
+    gamma_values = np.linspace(gamma_range[0], gamma_range[1], nombre_points)
+    
+    for a in alpha_values:
+        for g in gamma_values:
+            response= Signal_Response(a, g, sp,pv0)[0]
+            poid = calc_efficacité(response)
+            result.append((a, g, poid))
+    
+    best = min(result, key=lambda x: x[2])
+    print(f"alpha = {best[0]:.4f}, gamma = {best[1]:.4f}, efficacité = {best[2]:.4f}")
+    return best, result
+
+
+def Recursive_Optimise(alpha_range, gamma_range, nombre_points, sp, pv0, depth, final_result=None):
+    if final_result is None:
+        final_result = []
+
+    best, result = Optimise(alpha_range, gamma_range, nombre_points, sp, pv0)
+    final_result.append(result)
+    a_best, g_best, score_best = best
+
+    if depth == 0:
+        return best, final_result
+
+    alpha_span = (alpha_range[1] - alpha_range[0]) / 4
+    gamma_span = (gamma_range[1] - gamma_range[0]) / 4
+
+    new_alpha_range = (max(alpha_range[0], a_best - alpha_span), min(alpha_range[1], a_best + alpha_span))
+    new_gamma_range = (max(gamma_range[0], g_best - gamma_span), min(gamma_range[1], g_best + gamma_span))
+
+    new_best, final_result = Recursive_Optimise(new_alpha_range, new_gamma_range, nombre_points, sp, pv0, depth - 1, final_result)
+
+    # ← retourne le meilleur des deux niveaux
+    if new_best[2] < score_best:
+        return new_best, final_result
+    return best, final_result 
+
+def plot_pv_sp(t, PV, SP, title="PV vs SP"):
+    """
+    Trace PV et SP en fonction du temps.
+    """
+    n = min(len(t) if t else 0, len(PV) if PV else 0, len(SP) if SP else 0)
     if n == 0:
         print("Données vides, rien à tracer")
         return
     
     plt.figure(figsize=(12, 6))
-    
-    # Tracer PV et SP toujours
     plt.plot(t[:n], PV[:n], 'r-', label='PV', linewidth=2)
     plt.plot(t[:n], SP[:n], 'b--', label='SP', linewidth=2)
-    
-    # Trait vertical SEULEMENT si idx valide
-    if idx is not None and 0 <= idx < n:
-        plt.axvline(x=t[idx], color='k', linestyle=':', linewidth=3, 
-                   label=f'Settling point (t={t[idx]:.0f}s)')
-        print(f"Trait vertical ajouté à t={t[idx]:.0f}s (index {idx})")
-    else:
-        print(f"Index {idx} ignoré (invalide), pas de trait vertical")
-    
     plt.xlabel('Temps [s]')
     plt.ylabel('Valeur [°C]')
     plt.title(title)
@@ -260,107 +267,92 @@ def plot_pv_sp_with_index(t, PV, SP, idx, title="PV vs SP"):
     plt.tight_layout()
     plt.show()
 
-#----------------------------------------------
 
-def Optimise(step=0.1):
-    values = []
-    alphas = np.arange(0.1, 5.0, step)
-    gammas = np.arange(0.1, 5.0, step)
-    for i in alphas:
-        for j in gammas:
-            results, P = Signal_Response(i, j)
-            idx = find_settling_index(results["PV"], results["SP"], window=10, tol_percent=0.1, check_until_end=True)
-            if idx is not None:
-                print(f"Settling stable trouvé pour alpha={i}, gamma={j} à t={results['t'][idx]:.0f}s")
-                print(idx)
-                values.append((i, j, results['t'][idx]))
-            else:
-                print(f"Pas de settling stable pour alpha={i}, gamma={j}")
-    
-    values.sort()  # Trie par settling_time croissant
-    best_time, best_alpha, best_gamma = values[0]
-    
-    print(f"*** MEILLEUR: alpha={best_alpha:.3f}, gamma={best_gamma:.3f}, time={best_time:.0f}s ***")
-    return best_alpha, best_gamma
+#experimentation regle générale
 
 
 
-def Optimise2(alpha, gamma, nr):
-    value = []
-    alphas = np.linspace(alpha[0], alpha[1], nr)
-    gammas = np.linspace(gamma[0], gamma[1], nr)
-    
-    for i in alphas:
-        for j in gammas:
-            results, P = Signal_Response(i, j)
-            idx = find_settling_index(results["PV"], results["SP"], window=10, tol_percent=0.1, check_until_end=True)
-            if idx is not None:
-                value.append((i, j, results['t'][idx]))
-                print(f"valeur trouvée pour alpha={i}, gamma={j}, time={idx}")
-            else : 
-                print(f"Pas de settling stable pour alpha={i}, gamma={j}")
-
-    if not value:
-        raise ValueError("Aucun point stable trouvé dans cette zone !")
-
-    best = min(value, key=lambda x: x[2])  # min settling time
-    
-    step_a = (alpha[1] - alpha[0]) / 4
-    step_g = (gamma[1] - gamma[0]) / 4
-    
-    new_alpha = (best[0] - step_a, best[0] + step_a)
-    new_gamma = (best[1] - step_g, best[1] + step_g)
-    
-    return new_alpha, new_gamma, value, best
 
 
-def Optimise_recursif(alpha, gamma, depth, nr, all_results=None, best=None):
-    if all_results is None:
-        all_results = []
-    
-    if depth == 0:
-        return alpha, gamma, all_results, best
+def Optimise_Auto(alpha_range, gamma_range, nombre_points, sp, pv0, min_improvement=50, max_depth=5):
+    """
+    Fait le zoom récursif automatiquement, s'arrête quand l'amélioration < min_improvement pts IAE.
+    """
+    best, _ = Optimise(alpha_range, gamma_range, nombre_points, sp, pv0)
+    a_best, g_best, prev_score = best
+
+    for depth in range(1, max_depth):
+        alpha_span = (alpha_range[1] - alpha_range[0]) / (4 ** depth)
+        gamma_span = (gamma_range[1] - gamma_range[0]) / (4 ** depth)
+
+        new_alpha_range = (max(alpha_range[0], a_best - alpha_span), min(alpha_range[1], a_best + alpha_span))
+        new_gamma_range = (max(gamma_range[0], g_best - gamma_span), min(gamma_range[1], g_best + gamma_span))
+
+        new_best, _ = Optimise(new_alpha_range, new_gamma_range, nombre_points, sp, pv0)
+        a_new, g_new, new_score = new_best
+
+        improvement = new_score - prev_score
+        print(f"  depth={depth+1} → score={new_score:.2f} (amélioration={improvement:.2f} pts IAE)")
+
+        if improvement < min_improvement:
+            print(f"  ✓ Convergé à depth={depth} (amélioration < {min_improvement} pts)")
+            break
+
+        best = new_best
+        a_best, g_best, prev_score = a_new, g_new, new_score
     else:
-        alpha, gamma, value, current_best = Optimise2(alpha, gamma, nr)
-        all_results.extend(value)
-        best = current_best  
-        return Optimise_recursif(alpha, gamma, depth-1, nr, all_results, best)
-    
+        print(f"  ⚠ max_depth={max_depth} atteint sans convergence")
+
+    return best
 
 
-def Plot_Heatmap(all_results, depth):
-    pass_size = len(all_results) // depth
-    passes = [all_results[i*pass_size:(i+1)*pass_size] for i in range(depth)]
+def build_calibration(step_range, pv0, nombre_steps, alpha_range, gamma_range, nombre_points, min_improvement=50, max_depth=5):
+    step_values = np.linspace(step_range[0], step_range[1], nombre_steps)
+    calibration = {}
+
+    for step in step_values:
+        sp = pv0 + step
+        print(f"Optimisation pour step={step:.1f}°C (SP={sp:.1f}, PV0={pv0})...")
+
+        best = Optimise_Auto(alpha_range, gamma_range, nombre_points, sp, pv0, min_improvement, max_depth)
+
+        step_key = round(float(step), 2)
+        calibration[step_key] = {
+            "alpha": float(best[0]),
+            "gamma": float(best[1])
+        }
+
+    print("\n=== Calibration finale ===")
+    print("calibration = {")
+    for s, params in calibration.items():
+        print(f"  {s}: {{'alpha': {params['alpha']:.4f}, 'gamma': {params['gamma']:.4f}}},")
+    print("}")
+
+    return calibration
+
+
+def interpolation(sp, pv0, dico):
+    step = sp - pv0
+
+    sorted_keys = sorted(dico.keys())
+    if step <= sorted_keys[0]:
+        res = dico[sorted_keys[0]]
+        return step, res["alpha"], res["gamma"]
     
-    fig, axes = plt.subplots(1, depth, figsize=(6*depth, 5))
-    if depth == 1:
-        axes = [axes]
+    if step >= sorted_keys[-1]:
+        res = dico[sorted_keys[-1]]
+        return step, res["alpha"], res["gamma"]
     
-    for i, pass_data in enumerate(passes):
-        df = pd.DataFrame(pass_data, columns=['alpha', 'gamma', 'time'])
+    for i in range(len(sorted_keys) - 1):
+        s0 = sorted_keys[i]
+        s1 = sorted_keys[i+1]
         
-        # ← Convertir en catégories ordonnées plutôt qu'arrondir
-        df['alpha'] = df['alpha'].round(3)
-        df['gamma'] = df['gamma'].round(3)
-        alpha_cats = sorted(df['alpha'].unique())
-        gamma_cats = sorted(df['gamma'].unique())
-        df['alpha'] = pd.Categorical(df['alpha'], categories=alpha_cats, ordered=True)
-        df['gamma'] = pd.Categorical(df['gamma'], categories=gamma_cats, ordered=True)
-        
-        pivot = df.pivot_table(index='alpha', columns='gamma', values='time', aggfunc='mean')
-        # ← reindex pour forcer la grille complète
-        pivot = pivot.reindex(index=alpha_cats, columns=gamma_cats)
-        
-        sns.heatmap(pivot, ax=axes[i], cmap='viridis_r',
-                    cbar_kws={'label': 'Settling Time (s)'},
-                    linewidths=0.5)
-        
-        axes[i].set_title(f'Passe {i+1}')
-        axes[i].set_xlabel('Gamma')
-        axes[i].set_ylabel('Alpha')
-        axes[i].invert_yaxis()
-        axes[i].xaxis.set_major_locator(plt.MaxNLocator(6))
-        axes[i].yaxis.set_major_locator(plt.MaxNLocator(6))
-    
-    plt.tight_layout()
-    plt.show()
+        if s0 <= step <= s1:
+            d0 = dico[s0]
+            d1 = dico[s1]
+            t = (step - s0) / (s1 - s0)
+            
+            alpha = d0["alpha"] + t * (d1["alpha"] - d0["alpha"])
+            gamma = d0["gamma"] + t * (d1["gamma"] - d0["gamma"])
+            
+            return step, alpha, gamma
